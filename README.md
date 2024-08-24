@@ -1,12 +1,3 @@
-# Laravel 10 Custom User Registration and Login Tutorial
-Learn how to develop a simple Laravel 10 custom user registration and login application
-
-> The complete tutorial step by step guide is available on my blog. [Laravel 10 Custom User Registration and Login](https://www.allphptricks.com/laravel-custom-user-registration-and-login-tutorial/)
-
-## Blog
-https://www.allphptricks.com/
-
-
 ## Installation 
 Make sure that you have setup the environment properly. You will need minimum PHP 8.1, MySQL/MariaDB, and composer.
 
@@ -17,4 +8,4 @@ Make sure that you have setup the environment properly. You will need minimum PH
 5. Set the application key by running `php artisan key:generate --ansi`
 6. Run migrations `php artisan migrate`
 7. Start local server by executing `php artisan serve`
-8. Visit here [http://127.0.0.1:8000/register](http://127.0.0.1:8000/register) to test the application
+8. Visit here [http://127.0.0.1:8000](http://127.0.0.1:8000) to test the application
