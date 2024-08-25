@@ -9,7 +9,8 @@ class CustomerData extends Model
 {
     use HasFactory;
 
-    public function user(){
-        return $this->belongsTo(User::class);
+    public function customer(){
+        return $this->belongsTo(Customer::class,'user_id','id');
     }
+    
 }

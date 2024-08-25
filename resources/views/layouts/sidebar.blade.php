@@ -15,7 +15,7 @@
             </div>
         </div>
         <div class="navbar-nav w-100">
-            <a href="{{ route('dashboard') }}" class="nav-item nav-link active"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
+            <a href="{{ route('dashboard') }}" class="nav-item nav-link {{ Request::is('dashboard') ? 'active' : '' }}"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
             <!-- <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-user me-2"></i>Customers</a>
                 <div class="dropdown-menu bg-transparent border-0">
@@ -23,9 +23,10 @@
                     <a href="{{ route('customer_add') }}" class="dropdown-item">Customer Add</a>
                 </div>
             </div> -->
-            <a href="{{ route('customer_list') }}" class="nav-item nav-link"><i class="fa fa-user me-2"></i>Customers</a>
-            <a href="{{ route('slab_list') }}" class="nav-item nav-link"><i class="fa fa-list me-2"></i>Slab</a>
-            <a href="{{ route('add_materials') }}" class="nav-item nav-link"><i class="fa fa-book me-2"></i>Entry</a>
+            <a href="{{ route('customer_list') }}" class="nav-item nav-link {{ Request::is('customer') ? 'active' : '' }}"><i class="fa fa-user me-2"></i>Customers</a>
+            <a href="{{ route('slab_list') }}" class="nav-item nav-link {{ Request::is('slab') ? 'active' : '' }}"><i class="fa fa-list me-2"></i>Slab</a>
+            <a href="{{ route('add_materials') }}" class="nav-item nav-link {{ Request::is('add-materials') ? 'active' : '' }}"><i class="fa fa-pen me-2"></i>Entry</a>
+            <a href="{{ route('hapta') }}" class="nav-item nav-link {{ Request::is('hapta') ? 'active' : '' }}"><i class="fa fa-book me-2"></i>Hapta</a>
             
         </div>
     </nav>

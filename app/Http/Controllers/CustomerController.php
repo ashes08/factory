@@ -67,6 +67,8 @@ class CustomerController extends Controller
     public function storeMaterials(Request $request){
         
         $customer = Customer::find( $request->user_id);
+        $slab = Slab::find($customer->slab_id);
+
         $customer->leaf = $customer->leaf + $request->leaf;
         $customer->thread = $customer->thread + $request->thread;
         $customer->tobaco = $customer->tobaco + $request->tobaco;
@@ -79,6 +81,9 @@ class CustomerController extends Controller
         $material->leaf = $request->leaf;
         $material->thread = $request->thread;
         $material->tobaco = $request->tobaco;
+        $material->neet_chant = $material->neet+$material->chant;
+        $material->leaf_use = ($material->neet+$material->chant)*$slab->leaf;
+        $material->tobaco_use = ($material->neet+$material->chant)*$slab->tobaco;
         $material->save();
         return redirect()->route('customer_list')->with('success', 'Record added successfully!');
     }
@@ -94,6 +99,7 @@ class CustomerController extends Controller
             'tobaco' => 'required|integer',
         ]);
         $customer = Customer::find( $request->user_id);
+        $slab = Slab::find($customer->slab_id);
         $customer->leaf = $customer->leaf - $request->leaf;
         $customer->thread = $customer->thread - $request->thread;
         $customer->tobaco = $customer->tobaco - $request->tobaco;
@@ -104,7 +110,10 @@ class CustomerController extends Controller
         $material->type = 2;
         $material->leaf = $request->leaf;
         $material->thread = $request->thread;
-        $material->tobaco = $request->tobaco;
+        $material->tobaco = $request->tobaco;  
+        $material->neet_chant = $material->neet+$material->chant;
+        $material->leaf_use = ($material->neet+$material->chant)*$slab->leaf;
+        $material->tobaco_use = ($material->neet+$material->chant)*$slab->tobaco; 
         $material->save();
         return redirect()->route('customer_list')->with('success', 'Record added successfully!');
     }
@@ -115,14 +124,14 @@ public function customerTransaction(Request $request, $id) {
     $slab = Slab::find($user->slab_id);
 
     // Get date range from request
-    $startDate = $request->input('start_date');
-    $endDate = $request->input('end_date');
+    $startDate = $request->input('start_date',date('Y-m-d', strtotime('-1 week')));
+    $endDate = $request->input('end_date',date('Y-m-d'));
 
     // Query CustomerData with date range filter
     $query = CustomerData::where('user_id', $id);
 
     if ($startDate && $endDate) {
-        $query->whereBetween('created_at', [$startDate, $endDate]);
+        $query->whereBetween('created_at',  [$startDate.' 00:00:00', $endDate." 23:59:59"]);
     }
 
     $customerDatas = $query->get();
@@ -135,6 +144,24 @@ public function customerTransaction(Request $request, $id) {
 }
 
     public function hapta(Request $request){
+
+        // Get date range from request
+        $startDate = $request->input('start_date',date('Y-m-d', strtotime('-1 week')));
+        $endDate = $request->input('end_date',date('Y-m-d'));
+
+        
+            $query = CustomerData::selectRaw('user_id,SUM(neet) as total_neet, SUM(chant) as total_chant, SUM(leaf) as total_leaf, SUM(thread) as total_thread, SUM(tobaco) as total_tobaco, SUM(neet_chant) as total_neet_chant, SUM(leaf_use) as total_leaf_use, SUM(tobaco_use) as total_tobaco_use');
+            
+            if ($startDate && $endDate) {
+                $query->whereBetween('created_at', [$startDate.' 00:00:00', $endDate." 23:59:59"]);
+            }
+            $customerDatas = $query->groupBy('user_id')->get();
+        
+
+
+        return view('customers.hapta')->with([
+            'customerDatas' => $customerDatas
+        ]);
 
     }
 }

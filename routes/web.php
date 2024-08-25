@@ -38,6 +38,7 @@ Route::namespace('App\Http\Controllers')->middleware('auth')->group(function () 
     Route::get('expance-materials/{userid}', 'CustomerController@expanceMaterials')->name('expance_materials');
     Route::post('expance-materials', 'CustomerController@storeExpanceMaterials')->name('store_expance_materials');
     Route::get('customer-transaction/{userid}', 'CustomerController@customerTransaction')->name('customer_transaction');
+    Route::get('hapta', 'CustomerController@hapta')->name('hapta');
 
     Route::get('slab', 'SlabController@index')->name('slab_list');
     Route::get('slab-add', 'SlabController@add')->name('slab_add');
