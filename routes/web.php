@@ -39,6 +39,8 @@ Route::namespace('App\Http\Controllers')->middleware('auth')->group(function () 
     Route::post('expance-materials', 'CustomerController@storeExpanceMaterials')->name('store_expance_materials');
     Route::get('customer-transaction/{userid}', 'CustomerController@customerTransaction')->name('customer_transaction');
     Route::get('hapta', 'CustomerController@hapta')->name('hapta');
+    Route::get('hapta-generate', 'CustomerController@haptaGenerate')->name('hapta_generate');
+    Route::post('hapta_date_store', 'CustomerController@haptaGenerate')->name('hapta_date_store');
 
     Route::get('slab', 'SlabController@index')->name('slab_list');
     Route::get('slab-add', 'SlabController@add')->name('slab_add');

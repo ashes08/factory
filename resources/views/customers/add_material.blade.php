@@ -32,6 +32,10 @@
                     <label for="user_id">User</label>
                 </div>
                 <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="entry_date" name="entry_date" placeholder="Entry Date" value="{{ date('Y-m-d')}}" >
+                    <label for="entry_date">Entry Date</label>
+                </div>
+                <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="neet" name="neet" placeholder="neet" value="0" >
                     <label for="neet">Neet</label>
                 </div>
@@ -42,14 +46,14 @@
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="leaf" name="leaf" placeholder="Leaf" value="0">
                     <label for="leaf">Leaf</label>
+                </div>                
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="tobaco" name="tobaco" placeholder="Tobaco" value="0">
+                    <label for="tobaco">Tobaco</label>
                 </div>
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="thread" name="thread" placeholder="Thread" value="0">
                     <label for="thread">Thread</label>
-                </div>
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="tobaco" name="tobaco" placeholder="Tobaco" value="0">
-                    <label for="tobaco">Tobaco</label>
                 </div>
                 
                 <div  class="col-sm-4 col-xl-4">
@@ -59,5 +63,18 @@
             </div>
         </div>
     <form>
+
+@endsection
+
+@section('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#entry_date').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                todayHighlight: true,
+            });
+        });
+    </script>
 
 @endsection

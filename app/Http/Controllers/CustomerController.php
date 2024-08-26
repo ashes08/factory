@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\CustomerData;
 use App\Models\Slab;
+use App\Models\HaptaDate;
 
 class CustomerController extends Controller
 {
@@ -36,7 +37,14 @@ class CustomerController extends Controller
         $Customer->tobaco = $request->tobaco;
         $Customer->thread = $request->thread;
         $Customer->slab_id = $request->slab;
-        $Customer->save();
+        if($Customer->save()){
+            $material = new CustomerData;
+            $material->entry_date = date('Y-m-d');
+            $material->leaf = $request->leaf;
+            $material->thread = $request->thread;
+            $material->tobaco = $request->tobaco;
+            $material->save();
+        }
        
         return redirect()->route('customer_list')->with('success', 'Customer added successfully!');
     }
@@ -76,6 +84,7 @@ class CustomerController extends Controller
 
         $material = new CustomerData;
         $material->user_id = $request->user_id;
+        $material->entry_date = $request->entry_date;
         $material->neet = $request->neet;
         $material->chant = $request->chant;
         $material->leaf = $request->leaf;
@@ -88,60 +97,89 @@ class CustomerController extends Controller
         return redirect()->route('customer_list')->with('success', 'Record added successfully!');
     }
 
-    public function expanceMaterials(Request $request,$id){
-        return view('customers.expance_material')->with(['user_id' => $id]);
-    }
+    // public function expanceMaterials(Request $request,$id){
+    //     return view('customers.expance_material')->with(['user_id' => $id]);
+    // }
 
-    public function storeExpanceMaterials(Request $request){
-        $validatedData = $request->validate([
-            'leaf' => 'required|integer',
-            'thread' => 'required|integer',
-            'tobaco' => 'required|integer',
+    // public function storeExpanceMaterials(Request $request){
+    //     $validatedData = $request->validate([
+    //         'leaf' => 'required|integer',
+    //         'thread' => 'required|integer',
+    //         'tobaco' => 'required|integer',
+    //     ]);
+    //     $customer = Customer::find( $request->user_id);
+    //     $slab = Slab::find($customer->slab_id);
+    //     $customer->leaf = $customer->leaf - $request->leaf;
+    //     $customer->thread = $customer->thread - $request->thread;
+    //     $customer->tobaco = $customer->tobaco - $request->tobaco;
+    //     $customer->save();
+
+    //     $material = new CustomerData;
+    //     $material->user_id = $request->user_id;
+    //     $material->type = 2;
+    //     $material->leaf = $request->leaf;
+    //     $material->thread = $request->thread;
+    //     $material->tobaco = $request->tobaco;  
+    //     $material->neet_chant = $material->neet+$material->chant;
+    //     $material->leaf_use = ($material->neet+$material->chant)*$slab->leaf;
+    //     $material->tobaco_use = ($material->neet+$material->chant)*$slab->tobaco; 
+    //     $material->save();
+    //     return redirect()->route('customer_list')->with('success', 'Record added successfully!');
+    // }
+
+
+    public function customerTransaction(Request $request, $id) {
+        $user = Customer::find($id); 
+        $slab = Slab::find($user->slab_id);
+        $currentDate = date("Y-m-d");
+        $weekStart = date("Y-m-d", strtotime('last Sunday', strtotime($currentDate)));
+        $weekEnd = date("Y-m-d", strtotime('next Saturday', strtotime($currentDate)));
+        // Get date range from request
+        $startDate = $request->input('start_date',$weekStart);
+        $endDate = $request->input('end_date',$weekEnd);
+
+        // Query CustomerData with date range filter
+        $query = CustomerData::where('user_id', $id);
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('entry_date',  [$startDate.' 00:00:00', $endDate." 23:59:59"]);
+        }
+
+        $customerDatas = $query->get();
+
+        $lastHapta = HaptaDate::orderBy('id', 'desc')->first();
+        $hapta_start_date = $lastHapta ? $lastHapta->hapta_start_date : date('Y-m-d');
+
+        
+        return view('customers.transaction')->with([
+            'customerDatas' => $customerDatas,
+            'user' => $user,
+            'slab' => $slab,
+            'weekStart' => $weekStart,
+            'weekEnd' => $weekEnd
         ]);
-        $customer = Customer::find( $request->user_id);
-        $slab = Slab::find($customer->slab_id);
-        $customer->leaf = $customer->leaf - $request->leaf;
-        $customer->thread = $customer->thread - $request->thread;
-        $customer->tobaco = $customer->tobaco - $request->tobaco;
-        $customer->save();
-
-        $material = new CustomerData;
-        $material->user_id = $request->user_id;
-        $material->type = 2;
-        $material->leaf = $request->leaf;
-        $material->thread = $request->thread;
-        $material->tobaco = $request->tobaco;  
-        $material->neet_chant = $material->neet+$material->chant;
-        $material->leaf_use = ($material->neet+$material->chant)*$slab->leaf;
-        $material->tobaco_use = ($material->neet+$material->chant)*$slab->tobaco; 
-        $material->save();
-        return redirect()->route('customer_list')->with('success', 'Record added successfully!');
     }
 
-
-public function customerTransaction(Request $request, $id) {
-    $user = Customer::find($id); 
-    $slab = Slab::find($user->slab_id);
-
-    // Get date range from request
-    $startDate = $request->input('start_date',date('Y-m-d', strtotime('-1 week')));
-    $endDate = $request->input('end_date',date('Y-m-d'));
-
-    // Query CustomerData with date range filter
-    $query = CustomerData::where('user_id', $id);
-
-    if ($startDate && $endDate) {
-        $query->whereBetween('created_at',  [$startDate.' 00:00:00', $endDate." 23:59:59"]);
+    public function haptaGenerate(Request $request){
+        if($request->post()){
+            $validatedData = $request->validate([
+                'hapta_start_date' => 'required|date',
+                'hapta_end_date' => 'required|date',
+            ]);
+            
+            $lastHapta = HaptaDate::orderBy('id', 'desc')->first();
+            if($lastHapta){
+                $lastHapta->hapta_end_date = $request->hapta_end_date;
+                $lastHapta->save();
+            }
+            $hapta = new HaptaDate;
+            $hapta->hapta_start_date = $request->hapta_start_date;
+            $hapta->save();
+            return redirect()->route('hapta_generate')->with('success', 'Record added successfully!');
+        }
+        return view('customers.hapta_generate');
     }
 
-    $customerDatas = $query->get();
-
-    return view('customers.transaction')->with([
-        'customerDatas' => $customerDatas,
-        'user' => $user,
-        'slab' => $slab
-    ]);
-}
 
     public function hapta(Request $request){
 

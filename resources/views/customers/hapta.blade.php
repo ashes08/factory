@@ -51,22 +51,51 @@
                 @if(!empty($customerDatas))
                     @php 
                         $i = 1; 
+                        $totalNeet = 0;
+                        $totalChant = 0;
+                        $totalLeaf = 0;
+                        $totalThread = 0;
+                        $totalTobaco = 0;
+                        $totalNeetChant = 0;
+                        $totalLeafUse = 0;
+                        $totalTobacoUse = 0;
                     @endphp
                     @foreach($customerDatas as $customer)
-                    <tr>
-                        <th scope="row"> {{ $i++ }}</th>
-                        <td>{{ $customer->customer->first_name }}</td>
-                        <td>{{ $customer->total_neet }}</td>
-                        <td>{{ $customer->total_chant }}</td>                        
-                        <td>{{ $customer->total_leaf }}</td>
-                        <td>{{ $customer->total_thread }}</td>
-                        <td>{{ $customer->total_tobaco }}</td>
-                        <td>{{ $customer->total_neet_chant}}</td>
-                        <td>{{ $customer->total_leaf_use}}</td>
-                        <td>{{ $customer->total_tobaco_use }}</td>
-                                              
-                    </tr>
+                        <tr>
+                            <th scope="row"> {{ $i++ }}</th>
+                            <td>{{ $customer->customer->first_name }}</td>
+                            <td>{{ $customer->total_neet }}</td>
+                            <td>{{ $customer->total_chant }}</td>                        
+                            <td>{{ $customer->total_leaf }}</td>
+                            <td>{{ $customer->total_thread }}</td>
+                            <td>{{ $customer->total_tobaco }}</td>
+                            <td>{{ $customer->total_neet_chant}}</td>
+                            <td>{{ $customer->total_leaf_use}}</td>
+                            <td>{{ $customer->total_tobaco_use }}</td>
+                                                
+                        </tr>
+                        @php
+                            $totalNeet += $customer->total_neet;
+                            $totalChant += $customer->total_chant;
+                            $totalLeaf += $customer->total_leaf;
+                            $totalThread += $customer->total_thread;
+                            $totalTobaco += $customer->total_tobaco;
+                            $totalNeetChant += $customer->total_neet_chant;
+                            $totalLeafUse += $customer->total_leaf_use;
+                            $totalTobacoUse += $customer->total_tobaco_use;
+                        @endphp
                     @endforeach
+                        <tr>
+                            <th scope="row" colspan="2"><strong>Total</strong></th>
+                            <td><strong>{{ $totalNeet }}</strong></td>
+                            <td><strong>{{ $totalChant }}</strong></td>                        
+                            <td><strong>{{ $totalLeaf }}</strong></td>
+                            <td><strong>{{ $totalThread }}</strong></td>
+                            <td><strong>{{ $totalTobaco }}</strong></td>
+                            <td><strong>{{ $totalNeetChant }}</strong></td>
+                            <td><strong>{{ $totalLeafUse }}</strong></td>
+                            <td><strong>{{ $totalTobacoUse }}</strong></td>
+                        </tr>
                 @endif
                 </tbody>
             </table>
