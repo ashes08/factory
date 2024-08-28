@@ -156,7 +156,6 @@ class CustomerController extends Controller
         }
         $customerDatas = $query->get();        
         $previousBalance = $haptaquery->orderBy('id', 'desc')->first();
-        dd($previousBalance);
         $haptaList = HaptaDate::orderBy('id','desc')->get();
 
         return view('customers.transaction')->with([
