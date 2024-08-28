@@ -185,19 +185,28 @@ class CustomerController extends Controller
 
             $lastHapta = HaptaDate::orderBy('id', 'desc')->skip(1)->first();
             $hapta_start_date = $lastHapta ? $lastHapta->hapta_start_date : date('Y-m-d');
-            $hapta_end_date = $lastHapta ? $lastHapta->hapta_end_date : date('Y-m-d');
+            $hapta_end_date = $request->hapta_end_date ? $request->hapta_end_date : date('Y-m-d');
             
             $customers = Customer::where('status','1')->get(); 
             foreach($customers as $customer){
                 $customerData = CustomerData::selectRaw('user_id,  (SUM(leaf) - SUM(leaf_use)) as leaf_balance, (SUM(tobaco) - SUM(tobaco_use)) as tobaco_balance')->where('user_id', $customer->id)->groupBy('user_id')->whereBetween('entry_date',  [$hapta_start_date.' 00:00:00', $hapta_end_date." 23:59:59"])->first();
                 
+                $lastHaptaId = $lastHapta->id;
+                $lastHaptaBalance = HaptaBalance::where('user_id', $customer->id)->where('hapta_id','<',$lastHaptaId)->orderBy('id','desc')->first();
+                $lastHaptaLeafBalance = $lastHaptaBalance ? $lastHaptaBalance->leaf_balance : 0;
+                $lastHaptaTobacoBalance = $lastHaptaBalance ? $lastHaptaBalance->tobaco_balance : 0;
+                $currentLeafBalance = isset($customerData->leaf_balance)?$customerData->leaf_balance:0;
+                $currentTobacoBalance = isset($customerData->tobaco_balance)?$customerData->tobaco_balance:0;
+                
+                //echo "==".$lastHaptaLeafBalance;
+                //dd($customerData);
                 $haptBalance = new HaptaBalance;
                 $haptBalance->user_id = $customer->id;
-                $haptBalance->hapta_id = $hapta->id;
+                $haptBalance->hapta_id = $lastHapta->id;
                 $haptBalance->hapta_start_date = $hapta_start_date;
                 $haptBalance->hapta_end_date = $hapta_end_date;
-                $haptBalance->leaf_balance = isset($customerData->leaf_balance)?$customerData->leaf_balance:0;
-                $haptBalance->tobaco_balance = isset($customerData->tobaco_balance)?$customerData->tobaco_balance:0;
+                $haptBalance->leaf_balance = $lastHaptaLeafBalance + $currentLeafBalance;
+                $haptBalance->tobaco_balance = $lastHaptaTobacoBalance + $currentTobacoBalance;
                 $haptBalance->save();
             }
             return redirect()->route('hapta_generate')->with('success', 'Record added successfully!');
