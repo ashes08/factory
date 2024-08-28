@@ -23,11 +23,11 @@
             <div class="bg-light rounded h-100 p-4">
                 <h4 class="mb-4">Hapta Generate</h4>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="hapta_end_date" name="hapta_end_date" placeholder="Current hapta end date" required>
+                    <input type="text" class="form-control" id="hapta_end_date" name="hapta_end_date" placeholder="Current hapta end date" required autocomplete="off">
                     <label for="hapta_end_date">Current hapta end date</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="hapta_start_date" name="hapta_start_date" placeholder="New hapta start date" required>
+                    <input type="text" class="form-control" id="hapta_start_date" name="hapta_start_date" placeholder="New hapta start date" required autocomplete="off">
                     <label for="last_name">New hapta start date</label>
                 </div>
                 
@@ -49,11 +49,20 @@
         $('#hapta_end_date').datepicker({
             format: 'yyyy-mm-dd',
             autoclose: true
+        }).on('changeDate', function(selected) {
+            var minDate = new Date(selected.date.valueOf());
+            $('#hapta_start_date').datepicker('setStartDate', minDate);
+            var nextDate = new Date(minDate);
+            nextDate.setDate(nextDate.getDate() + 1);
+            $('#hapta_start_date').datepicker('setDate', nextDate);
         });
 
         $('#hapta_start_date').datepicker({
             format: 'yyyy-mm-dd',
             autoclose: true
+        }).on('changeDate', function(selected) {
+            var maxDate = new Date(selected.date.valueOf());
+            $('#hapta_end_date').datepicker('setEndDate', maxDate);
         });
     });
 </script>

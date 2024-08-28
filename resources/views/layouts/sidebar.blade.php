@@ -27,6 +27,7 @@
             <a href="{{ route('slab_list') }}" class="nav-item nav-link {{ Request::is('slab') ? 'active' : '' }}"><i class="fa fa-list me-2"></i>Slab</a>
             <a href="{{ route('add_materials') }}" class="nav-item nav-link {{ Request::is('add-materials') ? 'active' : '' }}"><i class="fa fa-pen me-2"></i>Entry</a>
             <a href="{{ route('hapta') }}" class="nav-item nav-link {{ Request::is('hapta') ? 'active' : '' }}"><i class="fa fa-book me-2"></i>Hapta</a>
+            <a href="{{ route('hapta_generate') }}" class="nav-item nav-link {{ Request::is('hapta-generate') ? 'active' : '' }}"><i class="fa fa-file me-2"></i>Hapta Generate</a>
             
         </div>
     </nav>

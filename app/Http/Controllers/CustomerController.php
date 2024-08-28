@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\CustomerData;
 use App\Models\Slab;
 use App\Models\HaptaDate;
+use App\Models\HaptaBalance;
 
 class CustomerController extends Controller
 {
@@ -131,32 +132,39 @@ class CustomerController extends Controller
     public function customerTransaction(Request $request, $id) {
         $user = Customer::find($id); 
         $slab = Slab::find($user->slab_id);
-        $currentDate = date("Y-m-d");
-        $weekStart = date("Y-m-d", strtotime('last Sunday', strtotime($currentDate)));
-        $weekEnd = date("Y-m-d", strtotime('next Saturday', strtotime($currentDate)));
-        // Get date range from request
-        $startDate = $request->input('start_date',$weekStart);
-        $endDate = $request->input('end_date',$weekEnd);
+        $hapta_id = $request->input('hapta_id',0); 
+        
+        $hapta = HaptaDate::find($hapta_id);
 
+        if($hapta){
+            $startDate = $hapta->hapta_start_date;
+            $endDate = ($hapta->hapta_end_date) ? $hapta->hapta_end_date : date('Y-m-d');
+        }else{
+            $hapta = HaptaDate::orderBy('id','desc')->first();            
+            $startDate = $hapta ? $hapta->hapta_start_date : date('Y-m-d');
+            $endDate = ($hapta->hapta_end_date) ? $hapta->hapta_end_date : date('Y-m-d');            
+        }
         // Query CustomerData with date range filter
         $query = CustomerData::where('user_id', $id);
+        $haptaquery = HaptaBalance::where('user_id', $id);
 
         if ($startDate && $endDate) {
             $query->whereBetween('entry_date',  [$startDate.' 00:00:00', $endDate." 23:59:59"]);
+            $previousHapta =   HaptaDate::where('id','<',$hapta_id)->orderBy('id','desc')->first();
+            $previousHaptaId = $previousHapta ? $previousHapta->id : 0;          
+            $haptaquery->where('hapta_id', $previousHaptaId);
         }
+        $customerDatas = $query->get();        
+        $previousBalance = $haptaquery->orderBy('id', 'desc')->first();
+        dd($previousBalance);
+        $haptaList = HaptaDate::orderBy('id','desc')->get();
 
-        $customerDatas = $query->get();
-
-        $lastHapta = HaptaDate::orderBy('id', 'desc')->first();
-        $hapta_start_date = $lastHapta ? $lastHapta->hapta_start_date : date('Y-m-d');
-
-        
         return view('customers.transaction')->with([
             'customerDatas' => $customerDatas,
             'user' => $user,
             'slab' => $slab,
-            'weekStart' => $weekStart,
-            'weekEnd' => $weekEnd
+            'previousBalance' => $previousBalance,
+            'haptaList' => $haptaList
         ]);
     }
 
@@ -175,6 +183,24 @@ class CustomerController extends Controller
             $hapta = new HaptaDate;
             $hapta->hapta_start_date = $request->hapta_start_date;
             $hapta->save();
+
+            $lastHapta = HaptaDate::orderBy('id', 'desc')->skip(1)->first();
+            $hapta_start_date = $lastHapta ? $lastHapta->hapta_start_date : date('Y-m-d');
+            $hapta_end_date = $lastHapta ? $lastHapta->hapta_end_date : date('Y-m-d');
+            
+            $customers = Customer::where('status','1')->get(); 
+            foreach($customers as $customer){
+                $customerData = CustomerData::selectRaw('user_id,  (SUM(leaf) - SUM(leaf_use)) as leaf_balance, (SUM(tobaco) - SUM(tobaco_use)) as tobaco_balance')->where('user_id', $customer->id)->groupBy('user_id')->whereBetween('entry_date',  [$hapta_start_date.' 00:00:00', $hapta_end_date." 23:59:59"])->first();
+                
+                $haptBalance = new HaptaBalance;
+                $haptBalance->user_id = $customer->id;
+                $haptBalance->hapta_id = $hapta->id;
+                $haptBalance->hapta_start_date = $hapta_start_date;
+                $haptBalance->hapta_end_date = $hapta_end_date;
+                $haptBalance->leaf_balance = isset($customerData->leaf_balance)?$customerData->leaf_balance:0;
+                $haptBalance->tobaco_balance = isset($customerData->tobaco_balance)?$customerData->tobaco_balance:0;
+                $haptBalance->save();
+            }
             return redirect()->route('hapta_generate')->with('success', 'Record added successfully!');
         }
         return view('customers.hapta_generate');

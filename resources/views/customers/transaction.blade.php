@@ -21,18 +21,26 @@
             <div class="col-6">
                 <form id="dateRangeForm" action="" method="GET">
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control"  value="{{ request()->query('start_date') }}" id="startDate" name="start_date" placeholder="{{ $weekStart }}" autocomplete="off" required>
-                        <input type="text" class="form-control" value="{{ request()->query('end_date') }}" id="endDate" name="end_date" placeholder="{{ $weekEnd }}" autocomplete="off" required>
+                        <select name="hapta_id" id="hapta_id" class="form-control" required>                            
+                            @foreach($haptaList as $hapta)
+                                <option value="{{ $hapta->id }}" {{ request()->query('hapta_id') == $hapta->id ? 'selected' : '' }}>{{ $hapta->hapta_start_date }} - {{ $hapta->hapta_end_date?$hapta->hapta_end_date:date('Y-m-d')  }}</option>
+                            @endforeach
+                        </select>
                         <button type="submit" class="btn btn-primary">Search</button>
+                        
                     </div>
                 </form>
             </div>
         </div>
+        @php
+            $previousLeafBalance = isset($previousBalance->leaf_balance)?$previousBalance->leaf_balance:0;
+            $previousTobacoBalance = isset($previousBalance->tobaco_balance)?$previousBalance->tobaco_balance:0;
+        @endphp
         <div class="row border border-dark">
-            <div class="col-2 border-right border-dark"><strong>Balance</strong></div>
-            <div class="col-3 border-left border-dark"><strong>Leaf:</strong></div>
-            <div class="col-3 border-right border-dark"><strong>Tobaco:</strong></div>
-            <div class="col-3">&nbsp; </div>
+            <div class="col-4 border-right border-dark"><strong>Previous Week Balance</strong></div>
+            <div class="col-3 border-left border-dark"><strong>Leaf:</strong> {{ $previousLeafBalance }}</div>
+            <div class="col-3 border-right border-dark"><strong>Tobaco:</strong> {{ $previousTobacoBalance }}</div>
+            
         </div>
         <div class="row">
             <div class="col-12">&nbsp;</div>
@@ -105,6 +113,12 @@
                 @endif
                 </tbody>
             </table>
+        </div>
+        <div class="row border border-dark">
+            <div class="col-4 border-right border-dark"><strong>Current Week Balance</strong></div>
+            <div class="col-3 border-left border-dark"><strong>Leaf:</strong> {{ $previousLeafBalance + $totalLeaf-$totalLeafUse }}</div>
+            <div class="col-3 border-right border-dark"><strong>Tobaco:</strong> {{ $previousTobacoBalance+$totalTobaco-$totalTobacoUse }}</div>
+            
         </div>
     </div>
 </div>

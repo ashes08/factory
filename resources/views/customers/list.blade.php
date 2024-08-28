@@ -32,9 +32,9 @@
                         <th scope="col">First Name</th>
                         <th scope="col">Last Name</th>
                         <th scope="col">Phone</th>
-                        <th scope="col">Leaf</th>
+                        <!-- <th scope="col">Leaf</th>
                         <th scope="col">Thread</th>
-                        <th scope="col">Tobaco</th>
+                        <th scope="col">Tobaco</th> -->
                         <th scope="col">Slab</th>
                         <th scope="col">Action</th>
                     </tr>
@@ -50,9 +50,9 @@
                         <td>{{ $customer->first_name }}</td>
                         <td>{{ $customer->last_name }}</td>
                         <td>{{ $customer->phone }}</td>
-                        <td>{{ $customer->leaf }}</td>
+                        <!-- <td>{{ $customer->leaf }}</td>
                         <td>{{ $customer->thread }}</td>
-                        <td>{{ $customer->tobaco }}</td>
+                        <td>{{ $customer->tobaco }}</td> -->
                         <td>{{ $customer->slab->slab_name}}</td>
                         <td>
                             <a href="{{route('customer_edit',$customer->id)}}"  title="Edit"></title><i class="fa fa-edit"></i></a>
