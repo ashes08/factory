@@ -33,8 +33,11 @@
             </div>
         </div>
         @php
-            $previousLeafBalance = isset($previousBalance->leaf_balance)?$previousBalance->leaf_balance:0;
-            $previousTobacoBalance = isset($previousBalance->tobaco_balance)?$previousBalance->tobaco_balance:0;
+
+            $previousLeafBalance = isset($previousBalance->leaf_balance)?$previousBalance->leaf_balance:$initialLeafBalance;
+            $previousTobacoBalance = isset($previousBalance->tobaco_balance)?$previousBalance->tobaco_balance:$initialTobacoBalance;
+        
+            
         @endphp
         <div class="row border border-dark">
             <div class="col-4 border-right border-dark"><strong>Previous Week Balance</strong></div>

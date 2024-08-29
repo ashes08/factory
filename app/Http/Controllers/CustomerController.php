@@ -132,9 +132,13 @@ class CustomerController extends Controller
     public function customerTransaction(Request $request, $id) {
         $user = Customer::find($id); 
         $slab = Slab::find($user->slab_id);
-        $hapta_id = $request->input('hapta_id',0); 
+        $latest_hapta = HaptaDate::orderBy('id','desc')->first();
+        $hapta_id = $request->input('hapta_id',$latest_hapta->id); 
         
         $hapta = HaptaDate::find($hapta_id);
+
+        $initialLeafBalance = $user->leaf;
+        $initialTobacoBalance = $user->tobaco;
 
         if($hapta){
             $startDate = $hapta->hapta_start_date;
@@ -163,7 +167,9 @@ class CustomerController extends Controller
             'user' => $user,
             'slab' => $slab,
             'previousBalance' => $previousBalance,
-            'haptaList' => $haptaList
+            'haptaList' => $haptaList,
+            'initialLeafBalance' => $initialLeafBalance,
+            'initialTobacoBalance' => $initialTobacoBalance,
         ]);
     }
 
@@ -183,7 +189,7 @@ class CustomerController extends Controller
             $hapta->hapta_start_date = $request->hapta_start_date;
             $hapta->save();
 
-            $lastHapta = HaptaDate::orderBy('id', 'desc')->skip(1)->first();
+            //$lastHapta = HaptaDate::orderBy('id', 'desc')->skip(1)->first();
             $hapta_start_date = $lastHapta ? $lastHapta->hapta_start_date : date('Y-m-d');
             $hapta_end_date = $request->hapta_end_date ? $request->hapta_end_date : date('Y-m-d');
             
@@ -192,11 +198,14 @@ class CustomerController extends Controller
                 $customerData = CustomerData::selectRaw('user_id,  (SUM(leaf) - SUM(leaf_use)) as leaf_balance, (SUM(tobaco) - SUM(tobaco_use)) as tobaco_balance')->where('user_id', $customer->id)->groupBy('user_id')->whereBetween('entry_date',  [$hapta_start_date.' 00:00:00', $hapta_end_date." 23:59:59"])->first();
                 
                 $lastHaptaId = $lastHapta->id;
-                $lastHaptaBalance = HaptaBalance::where('user_id', $customer->id)->where('hapta_id','<',$lastHaptaId)->orderBy('id','desc')->first();
-                $lastHaptaLeafBalance = $lastHaptaBalance ? $lastHaptaBalance->leaf_balance : 0;
-                $lastHaptaTobacoBalance = $lastHaptaBalance ? $lastHaptaBalance->tobaco_balance : 0;
-                $currentLeafBalance = isset($customerData->leaf_balance)?$customerData->leaf_balance:0;
-                $currentTobacoBalance = isset($customerData->tobaco_balance)?$customerData->tobaco_balance:0;
+                
+                    $lastHaptaBalance = HaptaBalance::where('user_id', $customer->id)->where('hapta_id','<',$lastHaptaId)->orderBy('id','desc')->first();
+                    $lastHaptaLeafBalance = $lastHaptaBalance ? $lastHaptaBalance->leaf_balance : $customer->leaf;
+                    $lastHaptaTobacoBalance = $lastHaptaBalance ? $lastHaptaBalance->tobaco_balance : $customer->tobaco;
+                    $currentLeafBalance = isset($customerData->leaf_balance)?$customerData->leaf_balance:0;
+                    $currentTobacoBalance = isset($customerData->tobaco_balance)?$customerData->tobaco_balance:0;
+             
+                
                 
                 //echo "==".$lastHaptaLeafBalance;
                 //dd($customerData);
